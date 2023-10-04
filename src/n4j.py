@@ -4,15 +4,17 @@ from neo4j import GraphDatabase
 @dataclass
 class Driver:
     def __init__(self, uri:str, user:str, password:str):
-        self.uri = uri
-        self.user = user
-        self.password = password
+        self._driver = GraphDatabase.driver(uri, auth=(user, password))
 
     # Experimental query
     def execute_query(self, query, params={}):
         # Returns a tuple of records, summary, keys
-        with GraphDatabase.driver(self.uri, auth=(self.user, self.password)) as driver:
-            records, summary, keys =  driver.execute_query(query, params)
-            # Only interested in list of result records
-            return records
+        records, summary, keys =  self._driver.execute_query(query, params)
+        # Only interested in list of result records
+        return records
+        
+    def close(self):
+        # Don't forget to close the driver connection when you are finished
+        # with it
+        self._driver.close()
 
